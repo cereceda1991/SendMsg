@@ -1,0 +1,86 @@
+.container_app {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.container_app img {
+  width: 300px;
+}
+
+.card_container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+
+.container__clientDetail {
+  height: max-content;
+  justify-content: space-between;
+  font-size: .8rem;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  padding: 1rem;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+.container__clientDetail b {
+  color: #7F8487;
+}
+
+.container_buttons {
+  display: flex;
+  gap: 2rem;
+}
+
+
+.container__clientDetail button {
+  background-color: green;
+  padding: 1rem;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  border-radius: .3rem;
+  font-size: inherit;
+  font-weight: 600;
+}
+
+.container__clientDetail button:hover {
+  cursor: pointer;
+  background-color: white;
+}
+
+.button_send {
+  width: 250px;
+  padding: .3rem;
+  font-size: 1rem;
+  font-weight: 800;
+  background-color: #fff;
+  color: green;
+  border-radius: .3rem;
+}
+
+.button_send:hover {
+  cursor: pointer;
+}
+
+.form_input {
+  display: flex;
+  width: 100%;
+}
+
+.msg_generated {
+  text-align: justify;
+}
+
+.form_client {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.mensaje_enviado {
+  display: flex;
+}
