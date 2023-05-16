@@ -1,6 +1,7 @@
 import './App.css';
 import { read, utils, write } from 'xlsx';
 import React, { useState, useEffect } from 'react';
+
 import logo from './assets/images/logo.png';
 import SendMsg from './assets/components/SendMsg';
 
@@ -8,6 +9,17 @@ function App() {
   const [fileData, setFileData] = useState([]);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [exported, setExported] = useState(false);
+  const [messagesSent, setMessagesSent] = useState(false);
+
+  const sendAllMessages = () => {
+    setMessagesSent(true);
+
+    fileData.forEach((data, index) => {
+      setTimeout(() => {
+        sendMessage(data);
+      }, index * 5000);
+    });
+  };
 
 
   const handleFileChange = (event) => {
@@ -65,32 +77,6 @@ function App() {
     setExported(true);
   };
 
-  useEffect(() => {
-    const storedData = localStorage.getItem('fileData');
-    if (storedData) {
-      const jsonData = JSON.parse(storedData);
-      setFileData(jsonData);
-      setDataLoaded(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (fileData.length > 0) {
-      const messages = fileData.map((data) => {
-        return {
-          ...data,
-        };
-      });
-    }
-  }, [fileData]);
-
-  useEffect(() => {
-    if (dataLoaded) {
-      localStorage.setItem('fileData', JSON.stringify(fileData));
-    }
-  }, [fileData, dataLoaded]);
-
-
   return (
     <div className='container_app'>
       <img src={logo} alt="Logo" />
@@ -99,7 +85,9 @@ function App() {
         <input type="file" onChange={handleFileChange} accept=".xls, .xlsx" />
       </form>
       <div className='container_buttons'>
-        <button className='button_send' >ENVIAR TODOS</button>
+        <button className='button_send' onClick={sendAllMessages} disabled={messagesSent}>
+          {messagesSent ? 'ENVIANDO...' : 'ENVIAR TODOS'}
+        </button>
         {exported ? (
           <button className='button_send'>EXPORTADO</button>
         ) : (
@@ -110,7 +98,8 @@ function App() {
       <div className='card_container'>
         {dataLoaded ? (
           fileData.map((data, index) => (
-            <SendMsg key={index} data={data} />))
+            <SendMsg key={index} data={data} sendMessage={sendAllMessages} />
+          ))
         ) : (
           <p>Cargando datos...</p>
         )}

@@ -1,19 +1,21 @@
 import axios from 'axios';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 
-function SendMsg({ data, generatedMessages }) {
+function SendMsg({ data }) {
     const { id, user, servicio, direccion, deuda, celular } = data;
 
-    const [message, setMessage] = useState(generatedMessages);
+    const [message, setMessage] = useState('');
     const [phone, setPhone] = useState(data.phone || '');
-
     const [messageSent, setMessageSent] = useState(false);
 
-    const handleSubmit = async (event) => {
+    const sendMessage = async (event) => {
         event.preventDefault();
 
         try {
+
+            await new Promise((resolve) => setTimeout(resolve, 5000));
+
             const response = await axios.post('http://localhost:3001/lead', {
                 message: message,
                 phone: phone,
@@ -36,6 +38,7 @@ function SendMsg({ data, generatedMessages }) {
         }
     };
 
+
     const generateMessage = (data) => {
         const { user, deuda, servicio, direccion, celular } = data;
         const generatedMessage = `Estimado(a), ${user} le escribimos de JR TELECOM SAC para informarle que al día de hoy mantiene una deuda de S/ ${deuda} por el servicio de ${servicio} en la dirección de ${direccion}. Favor de realizar el pago correspondiente en nuestros centros de pago autorizados. Yape, Plin u oficina distrital a fin de evitar el corte y cargos por reconexión. En caso haya realizado el pago en los últimos días obviar el mensaje. Muchas gracias`;
@@ -43,6 +46,10 @@ function SendMsg({ data, generatedMessages }) {
         setMessage(generatedMessage);
         setPhone(celular);
     };
+
+    useEffect(() => {
+        generateMessage(data);
+    }, [data]);
 
     return (
         <section>
@@ -71,10 +78,7 @@ function SendMsg({ data, generatedMessages }) {
                     <p>
                         <b>CELULAR:</b> {celular}
                     </p>
-                    <button onClick={() => generateMessage(data)} type='submit'>
-                        Generar Mensaje
-                    </button>
-                    <form className='form_client' onSubmit={handleSubmit}>
+                    <form className='form_client' onSubmit={sendMessage}>
                         <label>
                             <input
                                 className='form_input'
