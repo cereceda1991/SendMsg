@@ -1,25 +1,39 @@
 import './App.css';
 import { read, utils, write } from 'xlsx';
+import axios from 'axios';
 import React, { useState, useEffect } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
 
 import logo from './assets/images/logo.png';
-import SendMsg from './assets/components/SendMsg';
+import logoexcel from './assets/images/excel.png'
 
 function App() {
+
   const [fileData, setFileData] = useState([]);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [exported, setExported] = useState(false);
-  const [messagesSent, setMessagesSent] = useState(false);
+  const [generatedMessage, setGeneratedMessage] = useState({});
+  const [message, setMessage] = useState('');
+  const [phone, setPhone] = useState('');
+  const [messageSent, setMessageSent] = useState(false);
+  const [messagesSentCount, setMessagesSentCount] = useState(0)
+  const [loading, setLoading] = useState(false);
 
-  const sendAllMessages = () => {
-    setMessagesSent(true);
+  const [sentUsers, setSentUsers] = useState(false)
 
-    fileData.forEach((data, index) => {
-      setTimeout(() => {
-        sendMessage(data);
-      }, index * 5000);
-    });
-  };
+
+  const generateMessage = (data) => {
+    const { id, user, deuda, servicio, direccion, celular } = data;
+    const generatedMessage = `Estimado(a), ${user} le escribimos de JR TELECOM SAC para informarle que al día de hoy mantiene una deuda de S/ ${deuda} por el servicio de ${servicio} en la dirección de ${direccion}. Favor de realizar el pago correspondiente en nuestros centros de pago autorizados. Yape, Plin u oficina distrital a fin de evitar el corte y cargos por reconexión. En caso haya realizado el pago en los últimos días obviar el mensaje. Muchas gracias`;
+
+    setGeneratedMessage((prevState) => ({
+      ...prevState,
+      [id]: generatedMessage,
+    }));
+
+    return generatedMessage;
+  }
+
 
 
   const handleFileChange = (event) => {
@@ -46,6 +60,11 @@ function App() {
 
       setFileData(jsonData);
       setDataLoaded(true);
+
+      if (jsonData.length > 0) {
+        const firstData = jsonData[0];
+        generateMessage(firstData);
+      }
     };
     reader.readAsArrayBuffer(file);
   };
@@ -77,34 +96,131 @@ function App() {
     setExported(true);
   };
 
+  const sendMessage = async (event, data) => {
+    event.preventDefault();
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await axios.post('http://localhost:3001/lead', {
+        message: generatedMessage[data.id - 1],
+        phone: data.celular,
+      });
+      console.log(response.data);
+      setMessage('');
+      setPhone('');
+
+      if (response.data.responseExSave && response.data.responseExSave.id) {
+        toast.success('Mensaje enviado con éxito');
+        setMessageSent(true);
+        setMessagesSentCount((prevCount) => prevCount + 1);
+      } else {
+        toast.error('Error al enviar el mensaje');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Error al enviar el mensaje');
+    }
+  };
+
+
+  const sendAllMessages = () => {
+    fileData.forEach((data) => {
+      const event = { preventDefault: () => { } };
+      sendMessage(event, data);
+    });
+  };
+
+
+  useEffect(() => {
+    if (fileData.length > 0) {
+      const generatedMessages = fileData.map((data) => generateMessage(data));
+      setGeneratedMessage(generatedMessages);
+    }
+  }, [fileData]);
+
+
   return (
-    <div className='container_app'>
-      <img src={logo} alt="Logo" />
-      <h1>Recordatorio de pago</h1>
-      <form>
+    <main className='container_app'>
+      <header className='container_header'>
+        <img src={logo} alt="Logo" />
+        <h1>Recordatorio de Pago</h1>
+      </header>
+      <form className='FileImporter'>
         <input type="file" onChange={handleFileChange} accept=".xls, .xlsx" />
       </form>
       <div className='container_buttons'>
-        <button className='button_send' onClick={sendAllMessages} disabled={messagesSent}>
-          {messagesSent ? 'ENVIANDO...' : 'ENVIAR TODOS'}
+        <button className='button_send' disabled={messageSent} onClick={sendAllMessages}>
+          {messageSent ? 'Mensajes enviados' : `ENVIAR TODOS `}
         </button>
+
+
         {exported ? (
           <button className='button_send'>EXPORTADO</button>
         ) : (
-          <button className='button_send' onClick={exportToExcel}>EXPORTAR EXCEL</button>
+          <button className='button_send' onClick={exportToExcel}>
+            EXPORTAR
+            <img className='logoexcel' src={logoexcel} />
+          </button>
         )}
       </div>
-      <h3>Datos cargados: {fileData.length} Clientes</h3>
-      <div className='card_container'>
-        {dataLoaded ? (
-          fileData.map((data, index) => (
-            <SendMsg key={index} data={data} sendMessage={sendAllMessages} />
-          ))
-        ) : (
-          <p>Cargando datos...</p>
-        )}
+      <h3>
+        {loading ? 'Cargando datos...' : `Datos cargados: ${fileData.length} Clientes | Mensajes enviados: ${messagesSentCount} | Mensajes No Enviados: ${fileData.length - messagesSentCount}`}
+      </h3>
+      <div>
+        <div className='card_container'>
+          {fileData.map((data) => (
+            <div className='container__clientDetail' key={data.id}>
+
+              <p>
+                <b>ID:</b> {data.id}
+              </p>
+              <p><b>APELLIDOS Y NOMBRES:</b> </p>
+              <p>{data.user}</p>
+
+              <p><b>TIPO DE SERVICIO:</b> </p>
+              <p>{data.servicio}</p>
+
+              <p><b>DIRECCIÓN:</b> </p>
+              <p>{data.direccion}</p>
+
+              <p><b>MONTO DE DEUDA:</b></p>
+              <p>S/.{data.deuda}</p>
+
+              <p><b>CELULAR:</b></p>
+              <p>{data.celular}</p>
+
+              <form className='form_client' onSubmit={(event) => sendMessage(event, data)}>
+                <label>
+                  <input
+                    className='form_input'
+                    type='text'
+                    value={generatedMessage[data.id - 1]}
+                    onChange={(e) => handleMessageChange(e.target.value, data)}
+                  />
+                </label>
+                <label>
+                  <input
+                    className='form_input'
+                    type='text'
+                    value={data.celular}
+                    onChange={(e) => handlePhoneChange(e.target.value, data)}
+                  />
+                </label>
+                {generatedMessage[data.id - 1] && (
+                  <div className='msg_generated'>
+                    <b>MENSAJE:</b>
+                    <p>{generatedMessage[data.id - 1]}</p>
+                  </div>
+                )}
+                <button type='submit'>ENVIAR <i class='bx bx-mail-send icon_sender' /></button>
+              </form>
+              <Toaster />
+            </div>
+          ))}
+        </div>
+
+
       </div>
-    </div>
+    </main>
   );
 }
 

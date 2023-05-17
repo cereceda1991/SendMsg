@@ -6,8 +6,25 @@
   padding: 2rem;
 }
 
-.container_app img {
+.container_header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.container_header img {
   width: 300px;
+}
+
+.FileImporter {
+  display: flex;
+  justify-content: end;
+}
+
+.FileImporter input {
+  font-size: 1.2rem;
+  font-weight: 600;
 }
 
 .card_container {
@@ -18,12 +35,12 @@
 
 
 .container__clientDetail {
-  height: max-content;
+  height: 600px;
   justify-content: space-between;
   font-size: .8rem;
   display: flex;
   flex-direction: column;
-  gap: .5rem;
+  gap: .3rem;
   padding: 1rem;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
@@ -39,12 +56,16 @@
 
 
 .container__clientDetail button {
+  display: flex;
   background-color: green;
   padding: 1rem;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
   border-radius: .3rem;
   font-size: inherit;
   font-weight: 600;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
 }
 
 .container__clientDetail button:hover {
@@ -53,6 +74,10 @@
 }
 
 .button_send {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .3rem;
   width: 250px;
   padding: .3rem;
   font-size: 1rem;
@@ -62,17 +87,26 @@
   border-radius: .3rem;
 }
 
+.logoexcel {
+  width: 30px;
+}
+
 .button_send:hover {
   cursor: pointer;
 }
 
 .form_input {
-  display: flex;
+  display: none;
   width: 100%;
+  background-color: red;
 }
 
 .msg_generated {
   text-align: justify;
+}
+
+.msg_generated p {
+  margin-top: .5rem;
 }
 
 .form_client {
@@ -81,6 +115,6 @@
   gap: .5rem;
 }
 
-.mensaje_enviado {
-  display: flex;
+.icon_sender {
+  font-size: 1.3rem;
 }
